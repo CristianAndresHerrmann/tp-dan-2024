@@ -21,8 +21,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: pgadmin-container
     environment:
-      PGADMIN_DEFAULT_EMAIL: mdomingu@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: pgdan
+      PGADMIN_DEFAULT_EMAIL: cherrmann512@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: OS9GHe10
     ports:
       - "8032:80"
     depends_on:
