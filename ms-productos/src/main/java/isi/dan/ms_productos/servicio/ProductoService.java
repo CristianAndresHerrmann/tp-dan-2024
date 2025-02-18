@@ -27,11 +27,13 @@ public class ProductoService {
         // buscar el producto
         // actualizar el stock
         // verificar el punto de pedido y generar un pedido
+        
     }
 
 
 
     public Producto saveProducto(Producto producto) {
+        // producto.setStockActual(0);
         return productoRepository.save(producto);
     }
 
@@ -46,5 +48,13 @@ public class ProductoService {
     public void deleteProducto(Long id) {
         productoRepository.deleteById(id);
     }
+
+    public Producto updateStockAndPrice(StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
+        Producto producto = productoRepository.findById(stockUpdateDTO.getIdProducto()).orElseThrow(() -> new ProductoNotFoundException(stockUpdateDTO.getIdProducto()));
+        producto.setStockActual(producto.getStockActual() + stockUpdateDTO.getCantidad());
+        producto.setPrecio(stockUpdateDTO.getPrecio());
+        return productoRepository.save(producto);
+    }
+        
 }
 
