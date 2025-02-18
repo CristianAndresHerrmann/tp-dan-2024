@@ -33,6 +33,7 @@ public class CategoriaController {
     @LogExecutionTime
     public ResponseEntity<Categoria> createCategoria(@RequestBody @Validated Categoria categoria) {
         Categoria savedCategoria = categoriaService.saveCategoria(categoria);
+        log.info("Categoria guardada {}", savedCategoria);
         return ResponseEntity.ok(savedCategoria);
     }
 
@@ -48,7 +49,7 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.getCategoriaById(id));
     }
 
-        @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}")
     @LogExecutionTime
     public ResponseEntity<Void> deleteCategoria(@PathVariable Long id) {
         categoriaService.deleteCategoria(id);

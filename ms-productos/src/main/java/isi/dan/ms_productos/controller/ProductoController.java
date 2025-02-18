@@ -79,7 +79,7 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping
+    @PutMapping("/stock")
     @LogExecutionTime
     public ResponseEntity<Producto> updateStockAndPrice( StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
         Producto updatedProducto = productoService.updateStockAndPrice(stockUpdateDTO);

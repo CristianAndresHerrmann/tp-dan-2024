@@ -1,5 +1,7 @@
 package isi.dan.ms_productos.servicio;
 
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -31,9 +33,12 @@ public class ProductoService {
     }
 
 
-
+    
     public Producto saveProducto(Producto producto) {
-        // producto.setStockActual(0);
+        producto.setStockActual(0);
+        if(producto.getDescuento() == null) {
+            producto.setDescuento(BigDecimal.ZERO);
+        }
         return productoRepository.save(producto);
     }
 

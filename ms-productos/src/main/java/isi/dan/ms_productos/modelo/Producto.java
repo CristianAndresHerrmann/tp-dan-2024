@@ -41,7 +41,7 @@ public class Producto {
 
     @NotNull
     @Min(message = "El descuento no puede ser menor a 0", value = 0)
-    private BigDecimal descuento;
+    private BigDecimal descuento = BigDecimal.ZERO;
 
     @ManyToOne
     @JoinColumn(name = "ID_CATEGORIA")
