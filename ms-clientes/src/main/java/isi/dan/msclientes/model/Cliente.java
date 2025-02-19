@@ -3,6 +3,7 @@ package isi.dan.msclientes.model;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -42,10 +43,10 @@ public class Cliente {
     @Min(value = 1, message = "La cantidad de obras activas no puede ser negativa")
     private Integer maximoCantidadObras;
 
-    @OneToMany(mappedBy = "cliente")
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Obra> obras;
 
-    @OneToMany(mappedBy = "cliente")
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UsuarioHabilitado> usuariosHabilitados;
     
 }
