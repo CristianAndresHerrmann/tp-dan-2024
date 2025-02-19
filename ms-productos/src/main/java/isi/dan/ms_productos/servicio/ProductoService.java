@@ -24,11 +24,22 @@ public class ProductoService {
     Logger log = LoggerFactory.getLogger(ProductoService.class);
 
     @RabbitListener(queues = RabbitMQConfig.STOCK_UPDATE_QUEUE)
-    public void handleStockUpdate(Message msg) {
+    public void handleStockUpdate(Message msg) throws ProductoNotFoundException {
         log.info("Recibido {}", msg);
+        String body = new String(msg.getBody());
+        // obtener el id del producto y la cantidad
+        Long idProducto = Long.valueOf(body.split(";")[0]);
+        Integer cantidad = Integer.valueOf(body.split(";")[1]);
         // buscar el producto
-        // actualizar el stock
+        Producto producto = productoRepository.findById(idProducto).orElseThrow(() -> new ProductoNotFoundException(idProducto));
+        // actualizar el stock del producto
+        producto.setStockActual(producto.getStockActual() - cantidad);
         // verificar el punto de pedido y generar un pedido
+        if(producto.getStockActual() < producto.getStockMinimo()) {
+            log.info("Generar pedido para el producto {}", producto);
+        }
+        // guardar el producto
+        productoRepository.save(producto);
         
     }
 
