@@ -1,12 +1,14 @@
 package isi.dan.msclientes.model;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -33,7 +35,17 @@ public class Cliente {
     private String cuit;
 
     @Column(name="MAXIMO_DESCUBIERTO")
-    @Min(value = 10000, message = "El descubierto maximo debe ser al menos 10000")
+    @Min(value = 0, message = "El maximo descubierto debe ser mayor que cero")
     private BigDecimal maximoDescubierto;
+
+    @Column(name="MAXIMO_CANTIDAD_OBRAS")
+    @Min(value = 1, message = "La cantidad de obras activas no puede ser negativa")
+    private Integer maximoCantidadObras;
+
+    @OneToMany(mappedBy = "cliente")
+    private List<Obra> obras;
+
+    @OneToMany(mappedBy = "cliente")
+    private List<UsuarioHabilitado> usuariosHabilitados;
     
 }
