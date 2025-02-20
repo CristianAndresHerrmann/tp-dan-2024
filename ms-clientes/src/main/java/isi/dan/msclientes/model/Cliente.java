@@ -3,6 +3,8 @@ package isi.dan.msclientes.model;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +37,7 @@ public class Cliente {
     
     private String cuit;
 
+    @Value("${cliente.maximo.descubierto}")
     @Column(name="MAXIMO_DESCUBIERTO")
     @Min(value = 0, message = "El maximo descubierto debe ser mayor que cero")
     private BigDecimal maximoDescubierto;
