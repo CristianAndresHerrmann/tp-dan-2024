@@ -15,9 +15,6 @@ public class UsuarioHabilitadoService {
     @Autowired
     private UsuarioHabilitadoRepository usuarioHabilitadoRepository;
 
-    @Autowired
-    private ClienteService clienteService;
-
     public List<UsuarioHabilitado> findAll() {
         return usuarioHabilitadoRepository.findAll();
     }
@@ -37,14 +34,5 @@ public class UsuarioHabilitadoService {
     public void deleteById(Integer id) {
         usuarioHabilitadoRepository.deleteById(id);
     }
-
-    //asociar usuario a cliente
-    public UsuarioHabilitado asignarCliente(Integer idUsuarioHabilitado, Integer idCliente) {
-        UsuarioHabilitado usuarioHabilitado = usuarioHabilitadoRepository.findById(idUsuarioHabilitado).get();
-        usuarioHabilitado.setCliente(clienteService.findById(idCliente).get());
-        return usuarioHabilitadoRepository.save(usuarioHabilitado);
-    }
-
-
 
 }
