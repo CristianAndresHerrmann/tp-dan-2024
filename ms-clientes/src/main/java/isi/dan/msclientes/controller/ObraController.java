@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import isi.dan.msclientes.aop.LogExecutionTime;
+import isi.dan.msclientes.exception.ClienteNotFoundException;
+import isi.dan.msclientes.exception.ObraNotFoundException;
 import isi.dan.msclientes.model.Obra;
 import isi.dan.msclientes.servicios.ObraService;
 
@@ -32,7 +34,7 @@ public class ObraController {
     }
 
     @PostMapping
-    public Obra create(@RequestBody Obra obra) {
+    public Obra create(@RequestBody Obra obra){
         return obraService.save(obra);
     }
 
@@ -53,4 +55,35 @@ public class ObraController {
         obraService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/asignar-cliente/{idCliente}")
+    public ResponseEntity<Obra> asignarCliente(@PathVariable Integer id, @PathVariable Integer idCliente) throws ObraNotFoundException, ClienteNotFoundException{
+        Obra obra = obraService.asignarCliente(id, idCliente);
+        return ResponseEntity.ok(obra);
+    }
+
+    @PutMapping("/{id}/habilitar")
+    public ResponseEntity<Obra> habilitar(@PathVariable Integer id) throws ObraNotFoundException {
+        Obra obra = obraService.findById(id)
+                .orElseThrow(() -> new ObraNotFoundException("Obra " + id + " no encontrada"));
+        obraService.habilitar(obra);
+        return ResponseEntity.ok(obra);
+    }
+
+    @PutMapping("/{id}/deshabilitar")
+    public ResponseEntity<Obra> desabilitar(@PathVariable Integer id) throws ObraNotFoundException {
+        Obra obra = obraService.findById(id)
+                .orElseThrow(() -> new ObraNotFoundException("Obra " + id + " no encontrada"));
+        obraService.deshabilitar(obra);
+        return ResponseEntity.ok(obra);
+    }
+
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<Obra> finalizar(@PathVariable Integer id) throws ObraNotFoundException {
+        Obra obra = obraService.findById(id)
+                .orElseThrow(() -> new ObraNotFoundException("Obra " + id + " no encontrada"));
+        obraService.finalizar(obra);
+        return ResponseEntity.ok(obra);
+    }
+
 }
