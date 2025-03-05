@@ -71,7 +71,7 @@ public class ObraController {
     }
 
     @PutMapping("/{id}/deshabilitar")
-    public ResponseEntity<Obra> desabilitar(@PathVariable Integer id) throws ObraNotFoundException {
+    public ResponseEntity<Obra> deshabilitar(@PathVariable Integer id) throws ObraNotFoundException {
         Obra obra = obraService.findById(id)
                 .orElseThrow(() -> new ObraNotFoundException("Obra " + id + " no encontrada"));
         obraService.deshabilitar(obra);
