@@ -58,7 +58,7 @@ public class ObraRepositoryTest {
 
     @BeforeEach
     void iniciarDatos(){
-    // Crear un cliente de prueba
+        // Crear un cliente de prueba
         clienteTest = new Cliente();
         clienteTest.setNombre("Cliente Test");
         clienteTest.setCorreoElectronico("cliente@test.com");
@@ -90,15 +90,6 @@ public class ObraRepositoryTest {
 
     @Test
     void testSaveAndFindById() {
-        // Obra obra = new Obra();
-        // obra.setDireccion("Test Obra");
-        // obraRepository.save(obra);
-
-        // Optional<Obra> foundObra = obraRepository.findById(obra.getId());
-        // log.info("ENCONTRE: {} ",foundObra);
-        // assertThat(foundObra).isPresent();
-        // assertThat(foundObra.get().getDireccion()).isEqualTo("Test Obra");
-
         Obra savedObra = obraRepository.save(obraTest);
         Optional<Obra> foundObra = obraRepository.findById(savedObra.getId());
         log.info("ENCONTRE: {} ",foundObra);
@@ -123,7 +114,9 @@ public class ObraRepositoryTest {
 
         // Buscamos obras por el ID del cliente
         List<Obra> obras = obraRepository.findByClienteId(clienteTest.getId());
+
         log.info("ENCONTRE: {} ",obras);
+        
         assertThat(obras.size()).isEqualTo(2);
         assertThat(obras.get(0).getDireccion()).isEqualTo("Direccion Test");
         assertThat(obras.get(1).getDireccion()).isEqualTo("Otra Direccion");
