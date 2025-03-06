@@ -55,7 +55,9 @@ public class ClienteService {
         UsuarioHabilitado usuarioHabilitado = usuarioHabilitadoService
                                             .findById(idUsuarioHabilitado)
                                             .orElseThrow(() -> new UsuarioHabilitadoNotFoundException("Usuario habilitado " + idUsuarioHabilitado + " no encontrado"));
-        cliente.getUsuariosHabilitados().add(usuarioHabilitado);
+        if(!cliente.getUsuariosHabilitados().contains(usuarioHabilitado)){
+            cliente.getUsuariosHabilitados().add(usuarioHabilitado);
+        }
         return clienteRepository.save(cliente);
     }
     
