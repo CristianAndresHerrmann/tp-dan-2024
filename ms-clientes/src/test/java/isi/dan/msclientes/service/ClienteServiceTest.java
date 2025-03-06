@@ -2,24 +2,19 @@ package isi.dan.msclientes.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import isi.dan.msclientes.dao.ClienteRepository;
-import isi.dan.msclientes.dao.ObraRepository;
 import isi.dan.msclientes.exception.UsuarioHabilitadoNotFoundException;
 import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.EstadoObra;
@@ -37,124 +32,133 @@ public class ClienteServiceTest {
     @Mock
     private UsuarioHabilitadoService usuarioHabilitadoService;
 
-    @Mock
-    private ObraRepository obraRepository;
-
     @InjectMocks
     private ClienteService clienteService;
 
     private Cliente cliente;
-    private List<Obra> obras;
-
+    private Obra obraHabilitada1;
+    private Obra obraHabilitada2;
+    private Obra obraPendiente;
+    private UsuarioHabilitado usuarioHabilitado;
 
     @BeforeEach
     void iniciarDatos() {
+        // Configurar cliente
         cliente = new Cliente();
         cliente.setId(1);
         cliente.setNombre("Cliente Test");
         cliente.setCorreoElectronico("cliente@test.com");
-        cliente.setMaximoDescubierto(BigDecimal.valueOf(100000));
-        cliente.setMaximoCantidadObras(2);
+        cliente.setCuit("20-12345678-9");
+        cliente.setMaximoDescubierto(new BigDecimal(100000));
+        cliente.setMaximoCantidadObras(5);
         cliente.setObras(new ArrayList<>());
         cliente.setUsuariosHabilitados(new ArrayList<>());
-    }
 
-    @Test
-    void testGetDescubierto_SinObras() {
-        // Cuando no hay obras
-        BigDecimal descubierto = clienteService.getDescubierto(cliente);
-        
-        assertEquals(BigDecimal.ZERO, descubierto);
-    }
+        // Configurar obras
+        obraHabilitada1 = new Obra();
+        obraHabilitada1.setId(1);
+        obraHabilitada1.setDireccion("Dirección 1");
+        obraHabilitada1.setEstado(EstadoObra.HABILITADA);
+        obraHabilitada1.setPresupuesto(new BigDecimal(20000));
+        obraHabilitada1.setCliente(cliente);
 
-    @Test
-    void testGetDescubierto_ConObrasHabilitadas() {
-        // Preparar obras
-        Obra obra1 = new Obra();
-        obra1.setEstado(EstadoObra.HABILITADA);
-        obra1.setPresupuesto(BigDecimal.valueOf(50000));
+        obraHabilitada2 = new Obra();
+        obraHabilitada2.setId(2);
+        obraHabilitada2.setDireccion("Dirección 2");
+        obraHabilitada2.setEstado(EstadoObra.HABILITADA);
+        obraHabilitada2.setPresupuesto(new BigDecimal(30000));
+        obraHabilitada2.setCliente(cliente);
 
-        Obra obra2 = new Obra();
-        obra2.setEstado(EstadoObra.HABILITADA);
-        obra2.setPresupuesto(BigDecimal.valueOf(30000));
+        obraPendiente = new Obra();
+        obraPendiente.setId(3);
+        obraPendiente.setDireccion("Dirección 3");
+        obraPendiente.setEstado(EstadoObra.PENDIENTE);
+        obraPendiente.setPresupuesto(new BigDecimal(15000));
+        obraPendiente.setCliente(cliente);
 
-        cliente.getObras().add(obra1);
-        cliente.getObras().add(obra2);
-
-        // Calcular descubierto
-        BigDecimal descubierto = clienteService.getDescubierto(cliente);
-        
-        assertEquals(BigDecimal.valueOf(80000), descubierto);
-    }
-
-    @Test
-    void testGetDescubierto_ConObrasPendientes() {
-        // Preparar obras 
-        Obra obra1 = new Obra();
-        obra1.setEstado(EstadoObra.PENDIENTE);
-        obra1.setPresupuesto(BigDecimal.valueOf(50000));
-
-        Obra obra2 = new Obra();
-        obra2.setEstado(EstadoObra.PENDIENTE);
-        obra2.setPresupuesto(BigDecimal.valueOf(30000));
-
-        cliente.getObras().add(obra1);
-        cliente.getObras().add(obra2);
-
-        BigDecimal descubierto = clienteService.getDescubierto(cliente);
-        
-        assertEquals(BigDecimal.ZERO, descubierto);
-    }
-
-    @Test
-    void testAsociarUsuarioHabilitado_Exitoso() throws UsuarioHabilitadoNotFoundException {
-        UsuarioHabilitado usuarioHabilitado = new UsuarioHabilitado();
+        // Configurar usuario
+        usuarioHabilitado = new UsuarioHabilitado();
         usuarioHabilitado.setId(1);
+        usuarioHabilitado.setCliente(cliente);
+    }
 
+     @Test
+    void getDescubierto_DebeCalcularSumatoriaDeObrasHabilitadas() {
+        // Arrange
+        cliente.setObras(Arrays.asList(obraHabilitada1, obraHabilitada2, obraPendiente));
+        BigDecimal descubiertoEsperado = new BigDecimal(50000); // 20000 + 30000
+
+        // Act
+        BigDecimal resultado = clienteService.getDescubierto(cliente);
+
+        // Assert
+        assertEquals(0, descubiertoEsperado.compareTo(resultado), 
+                    "El descubierto debe ser igual a la suma de presupuestos de obras habilitadas");
+    }
+
+    @Test
+    void getDescubierto_CuandoNoHayObrasHabilitadas_DebeRetornarCero() {
+        cliente.setObras(Arrays.asList(obraPendiente));
+
+        BigDecimal resultado = clienteService.getDescubierto(cliente);
+
+        assertEquals(0, BigDecimal.ZERO.compareTo(resultado), 
+                    "El descubierto debe ser cero cuando no hay obras habilitadas");
+    }
+
+    @Test
+    void asociarUsuarioHabilitado_CuandoClienteYUsuarioExisten_DebeAsociarlos() throws UsuarioHabilitadoNotFoundException {
         when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
         when(usuarioHabilitadoService.findById(1)).thenReturn(Optional.of(usuarioHabilitado));
         when(clienteRepository.save(cliente)).thenReturn(cliente);
 
-        // Ejecutar método
         Cliente resultado = clienteService.asociarUsuarioHabilitado(1, 1);
 
-        // Verificaciones
-        assertNotNull(resultado);
-        assertTrue(resultado.getUsuariosHabilitados().contains(usuarioHabilitado));
+        assertEquals(cliente, resultado);
+        assertTrue(cliente.getUsuariosHabilitados().contains(usuarioHabilitado));
+        verify(clienteRepository).findById(1);
+        verify(usuarioHabilitadoService).findById(1);
         verify(clienteRepository).save(cliente);
     }
 
     @Test
-    void testAsociarUsuarioHabilitado_UsuarioNoEncontrado() {
-        // Configurar mocks
-        when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
-        when(usuarioHabilitadoService.findById(1)).thenReturn(Optional.empty());
-
-        // Verificar excepción
-        assertThrows(UsuarioHabilitadoNotFoundException.class, () -> {
-            clienteService.asociarUsuarioHabilitado(1, 1);
-        });
-    }
-
-    @Test
-    void testAsociarUsuarioHabilitado_UsuarioYaAsociado() throws UsuarioHabilitadoNotFoundException {
-        // Preparar usuario habilitado
-        UsuarioHabilitado usuarioHabilitado = new UsuarioHabilitado();
-        usuarioHabilitado.setId(1);
+    void asociarUsuarioHabilitado_CuandoUsuarioYaEstaAsociado_NoDebeRepetirAsociacion() throws UsuarioHabilitadoNotFoundException {
         cliente.getUsuariosHabilitados().add(usuarioHabilitado);
-
-        // Configurar mocks
         when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
         when(usuarioHabilitadoService.findById(1)).thenReturn(Optional.of(usuarioHabilitado));
         when(clienteRepository.save(cliente)).thenReturn(cliente);
 
-        // Ejecutar método
         Cliente resultado = clienteService.asociarUsuarioHabilitado(1, 1);
 
-        // Verificaciones
-        assertNotNull(resultado);
-        assertEquals(1, resultado.getUsuariosHabilitados().size());
+        assertEquals(cliente, resultado);
+        assertEquals(1, cliente.getUsuariosHabilitados().size());
+        verify(clienteRepository).findById(1);
+        verify(usuarioHabilitadoService).findById(1);
         verify(clienteRepository).save(cliente);
     }
 
+    @Test
+    void asociarUsuarioHabilitado_CuandoClienteNoExiste_DebeLanzarException() {
+        when(clienteRepository.findById(99)).thenReturn(Optional.empty());
+
+        assertThrows(java.util.NoSuchElementException.class, () -> {
+            clienteService.asociarUsuarioHabilitado(99, 1);
+        });
+        verify(clienteRepository).findById(99);
+        verify(usuarioHabilitadoService, never()).findById(anyInt());
+    }
+
+    @Test
+    void asociarUsuarioHabilitado_CuandoUsuarioNoExiste_DebeLanzarException() {
+        when(clienteRepository.findById(1)).thenReturn(Optional.of(cliente));
+        when(usuarioHabilitadoService.findById(99)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(UsuarioHabilitadoNotFoundException.class, () -> {
+            clienteService.asociarUsuarioHabilitado(1, 99);
+        });
+        verify(clienteRepository).findById(1);
+        verify(usuarioHabilitadoService).findById(99);
+        verify(clienteRepository, never()).save(any());
+    }
 }
