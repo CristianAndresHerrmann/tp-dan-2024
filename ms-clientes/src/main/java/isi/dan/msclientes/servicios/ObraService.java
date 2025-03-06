@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import isi.dan.msclientes.dao.ObraRepository;
+import isi.dan.msclientes.exception.ClienteNotFoundException;
 import isi.dan.msclientes.exception.ObraNotFoundException;
 import isi.dan.msclientes.model.Cliente;
 import isi.dan.msclientes.model.EstadoObra;
@@ -46,12 +47,12 @@ public class ObraService {
         return obraRepository.findByClienteId(id);
     }
 
-    public Obra asignarCliente(Integer idObra, Integer idCliente) throws ObraNotFoundException {
+    public Obra asignarCliente(Integer idObra, Integer idCliente) throws ObraNotFoundException, ClienteNotFoundException {
         Obra obra = obraRepository.findById(idObra)
                 .orElseThrow(() -> new ObraNotFoundException("Obra " + idObra + " no encontrada"));
 
         Cliente cliente = clienteService.findById(idCliente)
-                .orElseThrow(() -> new ObraNotFoundException("Cliente " + idCliente + " no encontrado"));
+                .orElseThrow(() -> new ClienteNotFoundException("Cliente " + idCliente + " no encontrado"));
 
         if (obra.getCliente() != null) {
             throw new IllegalStateException("La obra ya se encuentra asignada a un cliente");
@@ -105,7 +106,7 @@ public class ObraService {
         return this.update(obra);
     }
 
-    private boolean validarHabilitacionObra(Obra obra, Cliente cliente) {
+    public boolean validarHabilitacionObra(Obra obra, Cliente cliente) {
         // se busca las obras del cliente que ya estan habilitadas y se cuentan
         // si verifica que tiene menos obras que las permitidas se habilita la obra
         int obrasHabiliadas = obraRepository.findByClienteIdAndEstadoEquals(obra.getCliente().getId(), EstadoObra.HABILITADA).size();
