@@ -1,5 +1,6 @@
 package isi.dan.ms_productos.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -81,10 +82,17 @@ public class ProductoController {
 
     @PutMapping("/stock")
     @LogExecutionTime
-    public ResponseEntity<Producto> updateStockAndPrice( StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
+    public ResponseEntity<Producto> updateStockAndPrice(@RequestBody StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
         Producto updatedProducto = productoService.updateStockAndPrice(stockUpdateDTO);
         return ResponseEntity.ok(updatedProducto);
     }
 
+    @PutMapping("/{id}/descuento")
+    @LogExecutionTime
+    public ResponseEntity<Producto> updateDescuento(@PathVariable Long id, @RequestBody BigDecimal descuento) 
+            throws ProductoNotFoundException {
+        return ResponseEntity.ok(productoService.updateDescuento(id, descuento));
+    }
+    
 }
 

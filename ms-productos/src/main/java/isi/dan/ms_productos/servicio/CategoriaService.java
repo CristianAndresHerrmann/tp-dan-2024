@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import isi.dan.ms_productos.dao.CategoriaRepository;
+import isi.dan.ms_productos.exception.CategoriaNotFoundException;
 import isi.dan.ms_productos.modelo.Categoria;
 
 @Service
@@ -18,8 +19,9 @@ public class CategoriaService {
         return categoriaRepository.save(categoria);
     }
 
-    public Categoria getCategoriaById(Long id) {
-        return categoriaRepository.findById(id).orElse(null);
+    public Categoria getCategoriaById(Long id) throws CategoriaNotFoundException {
+        return categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNotFoundException(id));
     }
 
     public List<Categoria> getAllCategorias() {
@@ -28,5 +30,12 @@ public class CategoriaService {
 
     public void deleteCategoria(Long id) {
         categoriaRepository.deleteById(id);
+    }
+
+    public Categoria updateCategoria(Long id, Categoria categoria) throws CategoriaNotFoundException {
+        Categoria categoriaToUpdate = categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNotFoundException(id));
+        categoriaToUpdate.setNombre(categoria.getNombre());
+        return categoriaRepository.save(categoriaToUpdate);
     }
 }

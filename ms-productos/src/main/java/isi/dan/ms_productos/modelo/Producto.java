@@ -31,6 +31,7 @@ public class Producto {
     @Column(name ="STOCK_ACTUAL")
     @Min(message = "El stock actual no puede ser menor a 0", value = 0)
     private int stockActual;
+    
     @Column(name ="STOCK_MINIMO")
     @Min(message = "El stock minimo  no puede ser menor a 0", value = 0)
     private int stockMinimo;

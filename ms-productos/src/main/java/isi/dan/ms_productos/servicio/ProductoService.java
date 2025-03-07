@@ -71,6 +71,12 @@ public class ProductoService {
         producto.setPrecio(stockUpdateDTO.getPrecio());
         return productoRepository.save(producto);
     }
+
+    public Producto updateDescuento(Long idProducto, BigDecimal descuento) throws ProductoNotFoundException {
+        Producto producto = productoRepository.findById(idProducto).orElseThrow(() -> new ProductoNotFoundException(idProducto));
+        producto.setDescuento(descuento);
+        return productoRepository.save(producto);
+    }
         
 }
 
