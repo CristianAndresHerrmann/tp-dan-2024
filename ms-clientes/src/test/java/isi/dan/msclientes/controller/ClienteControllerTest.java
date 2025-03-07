@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -35,9 +36,11 @@ public class ClienteControllerTest {
     void setUp() {
         cliente = new Cliente();
         cliente.setId(1);
-        cliente.setNombre("Test Cliente");
-        cliente.setCorreoElectronico("test@cliente.com");
-        cliente.setCuit("12998887776");
+        cliente.setNombre("Cliente Test");
+        cliente.setCorreoElectronico("cliente@test.com");
+        cliente.setCuit("30-12345678-9");
+        cliente.setMaximoDescubierto(BigDecimal.valueOf(100000));
+        cliente.setMaximoCantidadObras(3);
     }
 
     @Test
@@ -47,7 +50,7 @@ public class ClienteControllerTest {
         mockMvc.perform(get("/api/clientes"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].nombre").value("Test Cliente"));
+                .andExpect(jsonPath("$[0].nombre").value("Cliente Test"));
     }
 
     @Test
@@ -57,14 +60,14 @@ public class ClienteControllerTest {
         mockMvc.perform(get("/api/clientes/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.nombre").value("Test Cliente"))
-                .andExpect(jsonPath("$.cuit").value("12998887776"));
+                .andExpect(jsonPath("$.nombre").value("Cliente Test"))
+                .andExpect(jsonPath("$.cuit").value("30-12345678-9"));
     }
     @Test
     void testGetById_NotFound() throws Exception {
-        Mockito.when(clienteService.findById(2)).thenReturn(Optional.empty());
+        Mockito.when(clienteService.findById(99)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/clientes/2"))
+        mockMvc.perform(get("/api/clientes/99"))
                 .andExpect(status().isNotFound());
     }
 
@@ -76,7 +79,7 @@ public class ClienteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(cliente)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Test Cliente"));
+                .andExpect(jsonPath("$.nombre").value("Cliente Test"));
     }
 
     @Test
@@ -88,7 +91,17 @@ public class ClienteControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(cliente)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre").value("Test Cliente"));
+                .andExpect(jsonPath("$.nombre").value("Cliente Test"));
+    }
+
+    @Test
+    void testUpdate_NotFound() throws Exception {
+        Mockito.when(clienteService.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/clientes/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(cliente)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -98,6 +111,14 @@ public class ClienteControllerTest {
 
         mockMvc.perform(delete("/api/clientes/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDelete_NotFound() throws Exception {
+        Mockito.when(clienteService.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("/api/clientes/99"))
+                .andExpect(status().isNotFound());
     }
 
     private static String asJsonString(final Object obj) {
