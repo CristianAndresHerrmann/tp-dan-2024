@@ -46,7 +46,7 @@ public class CategoriaController {
 
     @GetMapping("/{id}")
     @LogExecutionTime
-    public ResponseEntity<Categoria> getCategoriaById(Long id) throws CategoriaNotFoundException {
+    public ResponseEntity<Categoria> getCategoriaById(@PathVariable Long id) throws CategoriaNotFoundException {
         return ResponseEntity.ok(categoriaService.getCategoriaById(id));
     }
 
