@@ -1,6 +1,10 @@
 package isi.dan.msclientes.dao;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +21,9 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import isi.dan.msclientes.model.Cliente;
+import isi.dan.msclientes.model.EstadoObra;
 import isi.dan.msclientes.model.Obra;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
@@ -43,6 +43,12 @@ public class ObraRepositoryTest {
     @Autowired
     private ObraRepository obraRepository;
 
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    private Obra obraTest;
+    private Cliente clienteTest;
+
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
@@ -52,10 +58,24 @@ public class ObraRepositoryTest {
 
     @BeforeEach
     void iniciarDatos(){
-        Obra obra = new Obra();
-        obra.setDireccion("Test Obra 999");
-        obra.setPresupuesto(BigDecimal.valueOf(100));
-        obraRepository.save(obra);
+        // Crear un cliente de prueba
+        clienteTest = new Cliente();
+        clienteTest.setNombre("Cliente Test");
+        clienteTest.setCorreoElectronico("cliente@test.com");
+        clienteTest.setCuit("30-12345678-9");
+        clienteTest.setMaximoDescubierto(BigDecimal.valueOf(100000));
+        clienteTest.setMaximoCantidadObras(3);
+        clienteRepository.save(clienteTest);
+
+        // Crear una obra de prueba
+        obraTest = new Obra();
+        obraTest.setDireccion("Direccion Test");
+        obraTest.setEsRemodelacion(false);
+        obraTest.setLat(10.5f);
+        obraTest.setLng(20.5f);
+        obraTest.setPresupuesto(BigDecimal.valueOf(50000));
+        obraTest.setEstado(EstadoObra.PENDIENTE);
+        obraTest.setCliente(clienteTest);
     }
 
     @BeforeEach
@@ -70,29 +90,60 @@ public class ObraRepositoryTest {
 
     @Test
     void testSaveAndFindById() {
-        Obra obra = new Obra();
-        obra.setDireccion("Test Obra");
-        obraRepository.save(obra);
-
-        Optional<Obra> foundObra = obraRepository.findById(obra.getId());
+        Obra savedObra = obraRepository.save(obraTest);
+        Optional<Obra> foundObra = obraRepository.findById(savedObra.getId());
         log.info("ENCONTRE: {} ",foundObra);
         assertThat(foundObra).isPresent();
-        assertThat(foundObra.get().getDireccion()).isEqualTo("Test Obra");
+        assertThat(foundObra.get().getDireccion()).isEqualTo("Direccion Test");
+    }
+
+    @Test
+    void testFindObrasByClienteID() {
+        // Guardar dos obras de prueba para el mismo cliente
+        obraRepository.save(obraTest);
+
+        Obra otraObra = new Obra();
+        otraObra.setDireccion("Otra Direccion");
+        otraObra.setEsRemodelacion(true);
+        otraObra.setLat(15.5f);
+        otraObra.setLng(25.5f);
+        otraObra.setPresupuesto(BigDecimal.valueOf(75000));
+        otraObra.setEstado(EstadoObra.PENDIENTE);
+        otraObra.setCliente(clienteTest);
+        obraRepository.save(otraObra);
+
+        // Buscamos obras por el ID del cliente
+        List<Obra> obras = obraRepository.findByClienteId(clienteTest.getId());
+
+        log.info("ENCONTRE: {} ",obras);
+        
+        assertThat(obras.size()).isEqualTo(2);
+        assertThat(obras.get(0).getDireccion()).isEqualTo("Direccion Test");
+        assertThat(obras.get(1).getDireccion()).isEqualTo("Otra Direccion");
+        assertThat(obras.get(0).getCliente().getId()).isEqualTo(clienteTest.getId());
+        assertThat(obras.get(1).getCliente().getId()).isEqualTo(clienteTest.getId());
     }
 
     @Test
     void testFindByPresupuesto() {
-        Obra obra = new Obra();
-        obra.setDireccion("Test Obra");
-        obra.setPresupuesto(BigDecimal.valueOf(200));
-        obraRepository.save(obra);
+        obraRepository.save(obraTest);
 
-        List<Obra> resultado = obraRepository.findByPresupuestoGreaterThanEqual(BigDecimal.valueOf(50));
+        Obra otraObra = new Obra();
+        otraObra.setDireccion("Otra Direccion");
+        otraObra.setEsRemodelacion(true);
+        otraObra.setLat(15.5f);
+        otraObra.setLng(25.5f);
+        otraObra.setPresupuesto(BigDecimal.valueOf(75000));
+        otraObra.setEstado(EstadoObra.PENDIENTE);
+        otraObra.setCliente(clienteTest);
+        obraRepository.save(otraObra);
+        obraRepository.save(otraObra);
+
+        List<Obra> resultado = obraRepository.findByPresupuestoGreaterThanEqual(BigDecimal.valueOf(10000));
         log.info("ENCONTRE: {} ",resultado);
         assertThat(resultado.size()).isEqualTo(2);
-        assertThat(resultado.get(0).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(50));
-        assertThat(resultado.get(1).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(50));
+        assertThat(resultado.get(0).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(10000));
+        assertThat(resultado.get(1).getPresupuesto()).isGreaterThan(BigDecimal.valueOf(10000));
     }
 
 }
-

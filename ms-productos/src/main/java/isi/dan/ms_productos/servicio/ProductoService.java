@@ -1,5 +1,7 @@
 package isi.dan.ms_productos.servicio;
 
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -15,6 +17,8 @@ import isi.dan.ms_productos.modelo.Producto;
 
 import java.util.List;
 
+import isi.dan.ms_productos.dto.DescuentoDTO;
+
 @Service
 public class ProductoService {
     @Autowired
@@ -22,18 +26,32 @@ public class ProductoService {
     Logger log = LoggerFactory.getLogger(ProductoService.class);
 
     @RabbitListener(queues = RabbitMQConfig.STOCK_UPDATE_QUEUE)
-    public void handleStockUpdate(Message msg) {
+    public void handleStockUpdate(Message msg) throws ProductoNotFoundException {
         log.info("Recibido {}", msg);
+        String body = new String(msg.getBody());
+        // obtener el id del producto y la cantidad
+        Long idProducto = Long.valueOf(body.split(";")[0]);
+        Integer cantidad = Integer.valueOf(body.split(";")[1]);
         // buscar el producto
-        // actualizar el stock
+        Producto producto = productoRepository.findById(idProducto).orElseThrow(() -> new ProductoNotFoundException(idProducto));
+        // actualizar el stock del producto
+        producto.setStockActual(producto.getStockActual() - cantidad);
         // verificar el punto de pedido y generar un pedido
+        if(producto.getStockActual() < producto.getStockMinimo()) {
+            log.info("Generar pedido para el producto {}", producto);
+        }
+        // guardar el producto
+        productoRepository.save(producto);
         
     }
 
 
-
+    
     public Producto saveProducto(Producto producto) {
-        // producto.setStockActual(0);
+        producto.setStockActual(0);
+        if(producto.getDescuento() == null) {
+            producto.setDescuento(BigDecimal.ZERO);
+        }
         return productoRepository.save(producto);
     }
 
@@ -53,6 +71,12 @@ public class ProductoService {
         Producto producto = productoRepository.findById(stockUpdateDTO.getIdProducto()).orElseThrow(() -> new ProductoNotFoundException(stockUpdateDTO.getIdProducto()));
         producto.setStockActual(producto.getStockActual() + stockUpdateDTO.getCantidad());
         producto.setPrecio(stockUpdateDTO.getPrecio());
+        return productoRepository.save(producto);
+    }
+
+    public Producto updateDescuento(Long idProducto, DescuentoDTO descuento) throws ProductoNotFoundException {
+        Producto producto = productoRepository.findById(idProducto).orElseThrow(() -> new ProductoNotFoundException(idProducto));
+        producto.setDescuento(descuento.getDescuento());
         return productoRepository.save(producto);
     }
         

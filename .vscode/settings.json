@@ -3,5 +3,6 @@
     "java.home": "C:\\Program Files\\Java\\jdk-21",
     "java.project.importOnFirstTimeStartup": "automatic",
     "java.import.gradle.wrapper.enabled": true,
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive"
   }

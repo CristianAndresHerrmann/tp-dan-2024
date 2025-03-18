@@ -1,5 +1,6 @@
 package isi.dan.ms_productos.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import isi.dan.ms_productos.aop.LogExecutionTime;
+import isi.dan.ms_productos.dto.DescuentoDTO;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
 import isi.dan.ms_productos.modelo.Producto;
@@ -79,12 +81,19 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping
+    @PutMapping("/stock")
     @LogExecutionTime
-    public ResponseEntity<Producto> updateStockAndPrice( StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
+    public ResponseEntity<Producto> updateStockAndPrice(@RequestBody StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
         Producto updatedProducto = productoService.updateStockAndPrice(stockUpdateDTO);
         return ResponseEntity.ok(updatedProducto);
     }
 
+    @PutMapping("/{id}/descuento")
+    @LogExecutionTime
+    public ResponseEntity<Producto> updateDescuento(@PathVariable Long id, @RequestBody DescuentoDTO descuento) 
+            throws ProductoNotFoundException {
+        return ResponseEntity.ok(productoService.updateDescuento(id, descuento));
+    }
+    
 }
 

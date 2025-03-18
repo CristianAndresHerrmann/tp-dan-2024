@@ -12,14 +12,11 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "MS_PRD_PRODUCTO")
 @Data
-@Getter
-@Setter
+
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +28,7 @@ public class Producto {
     @Column(name ="STOCK_ACTUAL")
     @Min(message = "El stock actual no puede ser menor a 0", value = 0)
     private int stockActual;
+    
     @Column(name ="STOCK_MINIMO")
     @Min(message = "El stock minimo  no puede ser menor a 0", value = 0)
     private int stockMinimo;
@@ -41,7 +39,7 @@ public class Producto {
 
     @NotNull
     @Min(message = "El descuento no puede ser menor a 0", value = 0)
-    private BigDecimal descuento;
+    private BigDecimal descuento = BigDecimal.ZERO;
 
     @ManyToOne
     @JoinColumn(name = "ID_CATEGORIA")

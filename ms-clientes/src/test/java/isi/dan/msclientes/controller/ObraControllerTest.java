@@ -2,6 +2,8 @@ package isi.dan.msclientes.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import isi.dan.msclientes.model.Cliente;
+import isi.dan.msclientes.model.EstadoObra;
 import isi.dan.msclientes.model.Obra;
 import isi.dan.msclientes.servicios.ObraService;
 
@@ -21,6 +23,8 @@ import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import isi.dan.msclientes.model.EstadoObra;
+
 @WebMvcTest(ObraController.class)
 public class ObraControllerTest {
 
@@ -31,13 +35,20 @@ public class ObraControllerTest {
     private ObraService obraService;
 
     private Obra obra;
+    private Cliente cliente;
 
     @BeforeEach
     void setUp() {
+        cliente = new Cliente();
+        cliente.setId(1);
+        cliente.setNombre("Cliente Test");
+
         obra = new Obra();
         obra.setId(1);
-        obra.setDireccion("Direccion Test Obra");
-        obra.setPresupuesto(BigDecimal.valueOf(100));
+        obra.setDireccion("Direccion Test");
+        obra.setPresupuesto(BigDecimal.valueOf(50000));
+        obra.setEstado(EstadoObra.PENDIENTE);
+        obra.setCliente(cliente);
     }
 
     @Test
@@ -47,7 +58,7 @@ public class ObraControllerTest {
         mockMvc.perform(get("/api/obras"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].direccion").value("Direccion Test Obra"));
+                .andExpect(jsonPath("$[0].direccion").value("Direccion Test"));
     }
 
     @Test
@@ -57,7 +68,15 @@ public class ObraControllerTest {
         mockMvc.perform(get("/api/obras/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+                .andExpect(jsonPath("$.direccion").value("Direccion Test"));
+    }
+
+    @Test
+    void testGetById_NotFound() throws Exception {
+        Mockito.when(obraService.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/obras/99"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -68,7 +87,7 @@ public class ObraControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(obra)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+                .andExpect(jsonPath("$.direccion").value("Direccion Test"));
     }
 
     @Test
@@ -80,7 +99,17 @@ public class ObraControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(obra)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.direccion").value("Direccion Test Obra"));
+                .andExpect(jsonPath("$.direccion").value("Direccion Test"));
+    }
+
+    @Test
+    void testUpdate_NotFound() throws Exception {
+        Mockito.when(obraService.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(put("/api/obras/99")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(obra)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -90,6 +119,56 @@ public class ObraControllerTest {
 
         mockMvc.perform(delete("/api/obras/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDelete_NotFound() throws Exception {
+        Mockito.when(obraService.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(delete("/api/obras/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testAsignarCliente() throws Exception {
+        Mockito.when(obraService.asignarCliente(1, 1)).thenReturn(obra);
+
+        mockMvc.perform(put("/api/obras/1/asignar-cliente/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.direccion").value("Direccion Test"));
+    }
+
+    @Test
+    void testHabilitar() throws Exception {
+        Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
+        Mockito.when(obraService.habilitar(obra)).thenReturn(obra);
+        obra.setEstado(EstadoObra.HABILITADA);
+
+        mockMvc.perform(put("/api/obras/1/habilitar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("HABILITADA"));
+    }
+
+    @Test
+    void testDeshabilitar() throws Exception {
+        Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
+        Mockito.when(obraService.deshabilitar(obra)).thenReturn(obra);
+        obra.setEstado(EstadoObra.PENDIENTE);
+
+        mockMvc.perform(put("/api/obras/1/deshabilitar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+    }
+
+    @Test
+    void testfinalizar() throws Exception {
+        Mockito.when(obraService.findById(1)).thenReturn(Optional.of(obra));
+        Mockito.when(obraService.finalizar(obra)).thenReturn(obra);
+        obra.setEstado(EstadoObra.FINALIZADA);
+
+        mockMvc.perform(put("/api/obras/1/finalizar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("FINALIZADA"));
     }
 
     private static String asJsonString(final Object obj) {
