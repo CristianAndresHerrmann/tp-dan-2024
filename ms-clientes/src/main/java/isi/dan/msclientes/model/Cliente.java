@@ -3,11 +3,10 @@ package isi.dan.msclientes.model;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,7 +36,6 @@ public class Cliente {
     
     private String cuit;
 
-    @Value("${cliente.maximo.descubierto}")
     @Column(name="MAXIMO_DESCUBIERTO")
     @Min(value = 0, message = "El maximo descubierto debe ser mayor que cero")
     private BigDecimal maximoDescubierto;
@@ -46,10 +44,10 @@ public class Cliente {
     @Min(value = 1, message = "La cantidad de obras activas no puede ser negativa")
     private Integer maximoCantidadObras;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Obra> obras;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UsuarioHabilitado> usuariosHabilitados;
     
 }

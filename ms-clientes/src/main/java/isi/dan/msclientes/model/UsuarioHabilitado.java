@@ -1,5 +1,7 @@
 package isi.dan.msclientes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,5 +41,6 @@ public class UsuarioHabilitado {
     
     @ManyToOne
     @JoinColumn(name = "ID_CLIENTE")
+    @JsonIgnore
     private Cliente cliente;
 }
