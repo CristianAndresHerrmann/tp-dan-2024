@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import isi.dan.ms_productos.dao.ProductoRepository;
+import isi.dan.ms_productos.dto.DescuentoDTO;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
 import isi.dan.ms_productos.modelo.Categoria;
@@ -37,6 +38,8 @@ public class ProductoServiceTest {
 
     private StockUpdateDTO stockUpdateDTO;
     private Categoria categoria;
+
+    private DescuentoDTO descuentoDTO;
 
     @BeforeEach
     void setUp() {
@@ -58,6 +61,10 @@ public class ProductoServiceTest {
         stockUpdateDTO.setIdProducto(1L);
         stockUpdateDTO.setCantidad(5);
         stockUpdateDTO.setPrecio(BigDecimal.valueOf(150));
+
+        descuentoDTO = new DescuentoDTO();
+        descuentoDTO.setIdProducto(1L);
+        descuentoDTO.setDescuento(new BigDecimal(10.00));
     }
 
     @Test
@@ -166,7 +173,7 @@ public class ProductoServiceTest {
         when(productoRepository.findById(1L)).thenReturn(java.util.Optional.of(producto));
         when(productoRepository.save(any(Producto.class))).thenAnswer(i -> i.getArgument(0));
 
-        Producto productoActualizado = productoService.updateDescuento(1L, new BigDecimal(10.00));
+        Producto productoActualizado = productoService.updateDescuento(1L, descuentoDTO);
 
         assertEquals(new BigDecimal(10.00), productoActualizado.getDescuento());
         verify(productoRepository).findById(1L);
@@ -175,10 +182,12 @@ public class ProductoServiceTest {
 
     @Test
     void updateDescuento_ProductoNoExiste() throws ProductoNotFoundException {
+        // se debe cambiar el id del producto en el descuentoDTO ya que es el que se busca en la base de datos
+        descuentoDTO.setIdProducto(99L);
         when(productoRepository.findById(99L)).thenReturn(java.util.Optional.empty());
 
         assertThrows(ProductoNotFoundException.class, () -> {
-            productoService.updateDescuento(99L, new BigDecimal(10.00));
+            productoService.updateDescuento(99L, descuentoDTO);
         });
         verify(productoRepository).findById(99L);
     }

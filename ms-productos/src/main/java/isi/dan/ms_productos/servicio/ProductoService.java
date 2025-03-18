@@ -17,6 +17,8 @@ import isi.dan.ms_productos.modelo.Producto;
 
 import java.util.List;
 
+import isi.dan.ms_productos.dto.DescuentoDTO;
+
 @Service
 public class ProductoService {
     @Autowired
@@ -72,9 +74,9 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
-    public Producto updateDescuento(Long idProducto, BigDecimal descuento) throws ProductoNotFoundException {
+    public Producto updateDescuento(Long idProducto, DescuentoDTO descuento) throws ProductoNotFoundException {
         Producto producto = productoRepository.findById(idProducto).orElseThrow(() -> new ProductoNotFoundException(idProducto));
-        producto.setDescuento(descuento);
+        producto.setDescuento(descuento.getDescuento());
         return productoRepository.save(producto);
     }
         

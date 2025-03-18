@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import isi.dan.ms_productos.aop.LogExecutionTime;
+import isi.dan.ms_productos.dto.DescuentoDTO;
 import isi.dan.ms_productos.dto.StockUpdateDTO;
 import isi.dan.ms_productos.exception.ProductoNotFoundException;
 import isi.dan.ms_productos.modelo.Producto;
@@ -89,7 +90,7 @@ public class ProductoController {
 
     @PutMapping("/{id}/descuento")
     @LogExecutionTime
-    public ResponseEntity<Producto> updateDescuento(@PathVariable Long id, @RequestBody BigDecimal descuento) 
+    public ResponseEntity<Producto> updateDescuento(@PathVariable Long id, @RequestBody DescuentoDTO descuento) 
             throws ProductoNotFoundException {
         return ResponseEntity.ok(productoService.updateDescuento(id, descuento));
     }

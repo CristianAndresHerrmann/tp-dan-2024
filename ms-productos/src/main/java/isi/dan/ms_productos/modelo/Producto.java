@@ -12,14 +12,11 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "MS_PRD_PRODUCTO")
 @Data
-@Getter
-@Setter
+
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
