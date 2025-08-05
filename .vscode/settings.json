@@ -4,5 +4,6 @@
     "java.project.importOnFirstTimeStartup": "automatic",
     "java.import.gradle.wrapper.enabled": true,
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.jdt.ls.vmargs": "-javaagent:${env:HOME}/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar"
   }

@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -34,11 +35,11 @@ public class Producto {
     private int stockMinimo;
 
     @NotNull
-    @Min(message = "El precio no puede ser menor a 0", value = 0)
+    @DecimalMin(message = "El precio no puede ser menor a 0", value = "0.0")
     private BigDecimal precio;
 
     @NotNull
-    @Min(message = "El descuento no puede ser menor a 0", value = 0)
+    @DecimalMin(message = "El descuento no puede ser menor a 0", value = "0.0")
     private BigDecimal descuento = BigDecimal.ZERO;
 
     @ManyToOne

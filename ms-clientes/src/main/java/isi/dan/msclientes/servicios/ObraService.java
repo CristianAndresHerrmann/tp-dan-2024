@@ -3,6 +3,7 @@ package isi.dan.msclientes.servicios;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -94,6 +95,7 @@ public class ObraService {
         return this.update(obra);
     }
 
+    @Transactional
     public Obra finalizar(Obra obra) {
         // solo se puede pasar de habilitada a finalizada
         if(obra.getEstado().equals(EstadoObra.PENDIENTE)){
@@ -103,7 +105,10 @@ public class ObraService {
             throw new IllegalStateException("La obra ya se encuentra finalizada");
         }
         obra.setEstado(EstadoObra.FINALIZADA);
-        return this.update(obra);
+        obraRepository.save(obra);
+
+        habilitarPendientesSiCorresponde(obra.getCliente());
+        return obra;
     }
 
     public boolean validarHabilitacionObra(Obra obra, Cliente cliente) {
@@ -112,6 +117,21 @@ public class ObraService {
         int obrasHabiliadas = obraRepository.findByClienteIdAndEstadoEquals(obra.getCliente().getId(), EstadoObra.HABILITADA).size();
         return obrasHabiliadas < cliente.getMaximoCantidadObras() 
             && clienteService.getDescubierto(cliente).add(obra.getPresupuesto()).compareTo(cliente.getMaximoDescubierto()) <= 0;
+    }
+
+    private void habilitarPendientesSiCorresponde(Cliente cliente) {
+        // Obtengo las obras pendientes en orden FIFO (o por prioridad si la tuvieses)
+        List<Obra> pendientes = obraRepository
+                .findByClienteIdAndEstadoEquals(cliente.getId(), EstadoObra.PENDIENTE);
+
+        for (Obra p : pendientes) {
+            if (validarHabilitacionObra(p, cliente)) {
+                p.setEstado(EstadoObra.HABILITADA);
+                obraRepository.save(p);
+                // si solo se debe habilitar UNA, salgo del bucle
+                break;
+            }
+        }
     }
 
 }

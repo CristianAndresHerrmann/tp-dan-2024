@@ -2,7 +2,7 @@ package isi.dan.ms.pedidos.modelo;
 
 import java.math.BigDecimal;
 
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -15,6 +15,14 @@ public class Producto {
     private String nombre;
     private String descripcion;
     private BigDecimal precio;
+
+    private Integer stockActual;
+    private Integer stockMinimo;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Integer getStock(){
+        return stockActual;
+    }
     
 
 }

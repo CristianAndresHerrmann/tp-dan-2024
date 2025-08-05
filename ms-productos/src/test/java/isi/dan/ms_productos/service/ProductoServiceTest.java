@@ -1,4 +1,4 @@
-package isi.dan.service;
+package isi.dan.ms_productos.service;
 
 import java.math.BigDecimal;
 import java.util.Arrays;

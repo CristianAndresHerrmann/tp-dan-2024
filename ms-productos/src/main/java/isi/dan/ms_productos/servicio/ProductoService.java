@@ -2,6 +2,7 @@ package isi.dan.ms_productos.servicio;
 
 import java.math.BigDecimal;
 
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -67,9 +68,13 @@ public class ProductoService {
         productoRepository.deleteById(id);
     }
 
+    @Transactional
     public Producto updateStockAndPrice(StockUpdateDTO stockUpdateDTO) throws ProductoNotFoundException {
         Producto producto = productoRepository.findById(stockUpdateDTO.getIdProducto()).orElseThrow(() -> new ProductoNotFoundException(stockUpdateDTO.getIdProducto()));
-        producto.setStockActual(producto.getStockActual() + stockUpdateDTO.getCantidad());
+        int nuevoStock = producto.getStockActual() + stockUpdateDTO.getCantidad();
+        if (nuevoStock < producto.getStockMinimo()) throw new IllegalArgumentException("Stock resultante no puede ser menor que stock minimo");
+
+        producto.setStockActual(nuevoStock);
         producto.setPrecio(stockUpdateDTO.getPrecio());
         return productoRepository.save(producto);
     }
